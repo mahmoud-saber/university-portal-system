@@ -37,14 +37,17 @@ return [
         'errorHandler' => [
             'errorAction' => 'site/error',
         ],
-        
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                'admin'   => 'admin/dashboard',
+                'teacher' => 'teacher/dashboard',
+                'student' => 'student/dashboard',
             ],
         ],
-        
+
+
     ],
     'params' => $params,
 ];

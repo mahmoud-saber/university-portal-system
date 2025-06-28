@@ -18,6 +18,7 @@ use Yii;
 class CourseRegistration extends \yii\db\ActiveRecord
 {
 
+public $grade_value;
 
     /**
      * {@inheritdoc}
@@ -36,6 +37,7 @@ class CourseRegistration extends \yii\db\ActiveRecord
             [['student_id', 'course_id'], 'required'],
             [['student_id', 'course_id'], 'integer'],
             [['created_at'], 'safe'],
+            [['updated_at'], 'safe'],
             [['course_id'], 'exist', 'skipOnError' => true, 'targetClass' => Course::class, 'targetAttribute' => ['course_id' => 'id']],
             [['student_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['student_id' => 'id']],
         ];
@@ -51,6 +53,7 @@ class CourseRegistration extends \yii\db\ActiveRecord
             'student_id' => 'Student ID',
             'course_id' => 'Course ID',
             'created_at' => 'Created At',
+            'updated_at' => 'Updated At',
         ];
     }
 

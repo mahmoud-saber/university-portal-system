@@ -34,15 +34,24 @@ class Document extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['file_type'], 'default', 'value' => null],
-            [['user_id', 'file_path'], 'required'],
-            [['user_id'], 'integer'],
-            [['created_at', 'updated_at'], 'safe'],
+            [
+                ['file_path'],
+                'file',
+                'extensions' => ['png', 'jpeg', 'jpg', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
+                'checkExtensionByMimeType' => true,
+                'maxSize' => 10 * 1024 * 1024, // 10 ميجابايت
+            ],
+            [['file_path', 'file_type', 'original_name', 'user_id'], 'required'],
             [['file_path'], 'string', 'max' => 255],
             [['file_type'], 'string', 'max' => 50],
-            [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],
+            [['original_name'], 'string', 'max' => 255],
+            [['user_id'], 'integer'],
+            [['created_at', 'updated_at'], 'safe'],
         ];
     }
+
+
+
 
     /**
      * {@inheritdoc}
@@ -68,5 +77,4 @@ class Document extends \yii\db\ActiveRecord
     {
         return $this->hasOne(User::class, ['id' => 'user_id']);
     }
-
 }

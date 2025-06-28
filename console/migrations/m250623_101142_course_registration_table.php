@@ -14,6 +14,7 @@ class m250623_101142_course_registration_table extends Migration
             'student_id' => $this->integer()->notNull(),
             'course_id' => $this->integer()->notNull(),
             'created_at' => $this->dateTime()->defaultExpression('CURRENT_TIMESTAMP'),
+            'updated_at' => $this->dateTime()->defaultExpression('CURRENT_TIMESTAMP'),
         ]);
 
         $this->addForeignKey(

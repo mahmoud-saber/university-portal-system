@@ -60,45 +60,47 @@ class SiteController extends Controller
      *
      * @return string
      */
-    public function actionIndex()
-    {
-        return $this->render('index');
-    }
-
-    /**
-     * Login action.
-     *
-     * @return string|Response
-     */
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
+            return $this->redirectByRole();
         }
 
         $this->layout = 'blank';
 
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
+            return $this->redirectByRole();
         }
 
         $model->password = '';
-
         return $this->render('login', [
             'model' => $model,
         ]);
     }
+    public function actionIndex()
+    {
+        return $this->redirectByRole();
+    }
+    private function redirectByRole()
+    {
+        $role = Yii::$app->user->identity->role;
 
-    /**
-     * Logout action.
-     *
-     * @return Response
-     */
-    public function actionLogout()
+        switch ($role) {
+            case 'admin':
+                return $this->redirect(['admin/dashboard']);
+            case 'teacher':
+                return $this->redirect(['teacher/dashboard']);
+            case 'student':
+                return $this->redirect(['student/dashboard']);
+            default:
+                return $this->goHome(); // fallback
+        }
+    }
+
+        public function actionLogout()
     {
         Yii::$app->user->logout();
-
         return $this->goHome();
     }
 }

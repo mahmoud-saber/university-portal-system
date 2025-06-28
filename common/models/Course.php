@@ -3,6 +3,7 @@
 namespace common\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "course".
@@ -21,6 +22,15 @@ use Yii;
 class Course extends \yii\db\ActiveRecord
 {
 
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors()
+    {
+        return [
+            TimestampBehavior::class,
+        ];
+    }
 
     /**
      * {@inheritdoc}
@@ -37,7 +47,7 @@ class Course extends \yii\db\ActiveRecord
     {
         return [
             [['description'], 'default', 'value' => null],
-            [['name', 'teacher_id', 'created_at', 'updated_at'], 'required'],
+            [['name', 'teacher_id'], 'required'],
             [['description'], 'string'],
             [['teacher_id', 'created_at', 'updated_at'], 'integer'],
             [['name'], 'string', 'max' => 255],
@@ -89,5 +99,9 @@ class Course extends \yii\db\ActiveRecord
     {
         return $this->hasOne(User::class, ['id' => 'teacher_id']);
     }
-
+    public function getStudents()
+    {
+        return $this->hasMany(User::class, ['id' => 'student_id'])
+            ->viaTable('course_registration', ['course_id' => 'id']);
+    }
 }
