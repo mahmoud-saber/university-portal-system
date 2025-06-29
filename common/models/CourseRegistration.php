@@ -3,6 +3,7 @@
 namespace common\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "course_registration".
@@ -26,6 +27,13 @@ public $grade_value;
     public static function tableName()
     {
         return 'course_registration';
+    }
+
+     public function behaviors()
+    {
+        return [
+            TimestampBehavior::class,
+        ];
     }
 
     /**

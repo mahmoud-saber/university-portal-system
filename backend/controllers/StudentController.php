@@ -74,7 +74,7 @@ class StudentController extends Controller
                 'or',
                 ['like', 'course.name', $search],
                 ['like', 'course.description', $search],
-                ['like', 'user.username', $search]  // اسم المدرّس
+                ['like', 'user.username', $search]  //  
             ]);
         }
 
@@ -87,7 +87,7 @@ class StudentController extends Controller
     }
 
 
-    // createstudent_courses //////////////////////////////////////
+    // create student_courses //////////////////////////////////////
     public function actionCreate()
     {
         if (Yii::$app->user->isGuest || Yii::$app->user->identity->role !== 'student') {

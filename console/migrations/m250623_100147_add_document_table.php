@@ -14,8 +14,8 @@ class m250623_100147_add_document_table extends Migration
             'user_id' => $this->integer()->notNull(),
             'file_path' => $this->string(255)->notNull(),
             'file_type' => $this->string(50),
-            'created_at' => $this->dateTime()->defaultExpression('CURRENT_TIMESTAMP'),
-            'updated_at' => $this->dateTime()->defaultExpression('CURRENT_TIMESTAMP'),
+            'created_at' =>  $this->integer()->notNull(),
+            'updated_at' =>  $this->integer()->notNull(),
         ]);
 
         $this->addForeignKey(

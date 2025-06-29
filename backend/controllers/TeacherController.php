@@ -7,9 +7,9 @@ use common\models\User;
 use yii\web\Controller;
 use common\models\Grade;
 use common\models\Course;
-use yii\web\UploadedFile;
-use yii\filters\AccessControl;
+ use yii\filters\AccessControl;
 use yii\web\NotFoundHttpException;
+use yii\web\ForbiddenHttpException;
 use common\models\CourseRegistration;
 
 class TeacherController extends Controller
@@ -70,7 +70,7 @@ class TeacherController extends Controller
                 'or',
                 ['like', 'user.username', $search],        
                 ['like', 'course.name', $search],         
-                ['like', 'course.description', $search],  //  الكورس
+                ['like', 'course.description', $search], 
             ]);
         }
 
@@ -78,7 +78,7 @@ class TeacherController extends Controller
 
         // جلب الدرجات بشكل غير مباشر وربطها مع كل تسجيل
         foreach ($registrations as $reg) {
-            $grade = \common\models\Grade::find()
+            $grade =Grade::find()
                 ->where([
                     'student_id' => $reg->student_id,
                     'course_id' => $reg->course_id,
@@ -119,12 +119,12 @@ class TeacherController extends Controller
     {
         // تأكد أن المستخدم الحالي هو مدرس
         if (Yii::$app->user->isGuest || Yii::$app->user->identity->role !== 'teacher') {
-            throw new \yii\web\ForbiddenHttpException('Only teachers can access this page.');
+            throw new ForbiddenHttpException('Only teachers can access this page.');
         }
 
         $teacherId = Yii::$app->user->id;
         $model = new CourseRegistration();
-        $gradeModel = new \common\models\Grade();
+        $gradeModel = new Grade();
 
         // جلب الطلاب المسجلين فقط في كورسات المدرس الحالي
         $students = CourseRegistration::find()
@@ -257,15 +257,15 @@ class TeacherController extends Controller
     ///////////////////////////////////////delete
     public function actionDelete($id)
     {
-        $model = \common\models\CourseRegistration::findOne($id);
+        $model = CourseRegistration::findOne($id);
 
         if ($model === null) {
-            throw new \yii\web\NotFoundHttpException('التسجيل المطلوب غير موجود.');
+            throw new NotFoundHttpException('التسجيل المطلوب غير موجود.');
         }
 
         $model->delete();
 
-        Yii::$app->session->setFlash('success', 'تم حذف التسجيل بنجاح.');
+        Yii::$app->session->setFlash('success', 'delete sucessful');
         return $this->redirect(['index']);
     }
 }

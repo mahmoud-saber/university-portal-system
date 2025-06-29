@@ -98,7 +98,7 @@ class DocumentController extends Controller
 
 
 
-    ////////////////////////////////////////////////update  document_teacher_students
+    ////////////////////////////////////////////////update  
     public function actionUpdate($id)
     {
         $model = Document::findOne($id);

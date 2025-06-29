@@ -13,6 +13,11 @@ return [
     'bootstrap' => ['log'],
     'modules' => [],
     'components' => [
+        'formatter' => [
+            'class' => 'yii\i18n\Formatter',
+            'timeZone' => 'Africa/Cairo', // أو 'UTC+1' حسب موقعك
+            'datetimeFormat' => 'php:d F Y - h:i:s A',
+        ],
         'request' => [
             'csrfParam' => '_csrf-backend',
         ],

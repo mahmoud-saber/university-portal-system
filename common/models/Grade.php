@@ -3,6 +3,7 @@
 namespace common\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "grade".
@@ -19,7 +20,12 @@ use Yii;
  */
 class Grade extends \yii\db\ActiveRecord
 {
-
+    public function behaviors()
+    {
+        return [
+            TimestampBehavior::class,
+        ];
+    }
 
     /**
      * {@inheritdoc}
@@ -79,5 +85,4 @@ class Grade extends \yii\db\ActiveRecord
     {
         return $this->hasOne(User::class, ['id' => 'student_id']);
     }
-
 }
