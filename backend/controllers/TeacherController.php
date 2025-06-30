@@ -41,7 +41,7 @@ class TeacherController extends Controller
         return $this->render('dashboard',['studentCount' => $studentCount]);
     }
 
-    ////////////////////////////////////////////////
+    
     public function actionProfile()
     {
         $teacherId = Yii::$app->user->id;
@@ -49,7 +49,6 @@ class TeacherController extends Controller
         return $this->render('profile', ['teacher' => $teacher]);
     }
 
-    /////////////////////////////////////////////////////index
 
     public function actionIndex()
     {
@@ -93,31 +92,10 @@ class TeacherController extends Controller
             'search' => $search,
         ]);
     }
-    /////////////////////////////////////////view 
-    public function actionView($id)
+
+     public function actionCreate()
     {
-        $model = CourseRegistration::findOne($id);
-        if (!$model || $model->course->teacher_id !== Yii::$app->user->id) {
-            throw new ForbiddenHttpException('Access denied.');
-        }
-
-        $gradeModel = \common\models\Grade::findOne([
-            'student_id' => $model->student_id,
-            'course_id' => $model->course_id,
-        ]);
-
-        return $this->render('view_teacher_students', [
-            'model' => $model,
-            'gradeModel' => $gradeModel,
-        ]);
-    }
-
-
-    ///////////////////////////////////////////create
-    public function actionCreate()
-    {
-        // تأكد أن المستخدم الحالي هو مدرس
-        if (Yii::$app->user->isGuest || Yii::$app->user->identity->role !== 'teacher') {
+         if (Yii::$app->user->isGuest || Yii::$app->user->identity->role !== 'teacher') {
             throw new ForbiddenHttpException('Only teachers can access this page.');
         }
 
@@ -125,8 +103,7 @@ class TeacherController extends Controller
         $model = new CourseRegistration();
         $gradeModel = new Grade();
 
-        // جلب الطلاب المسجلين فقط في كورسات المدرس الحالي
-        $students = CourseRegistration::find()
+         $students = CourseRegistration::find()
             ->joinWith(['student', 'course'])
             ->where(['course.teacher_id' => $teacherId])
             ->select(['user.id', 'user.username'])
@@ -136,15 +113,13 @@ class TeacherController extends Controller
 
         $studentList = ArrayHelper::map($students, 'id', 'username');
 
-        // جلب الكورسات الخاصة بالمدرس فقط
-        $courses = Course::find()
+         $courses = Course::find()
             ->where(['teacher_id' => $teacherId])
             ->select(['name', 'id'])
             ->indexBy('id')
             ->column();
 
-        // معالجة النموذج
-        if ($model->load(Yii::$app->request->post()) && $gradeModel->load(Yii::$app->request->post())) {
+         if ($model->load(Yii::$app->request->post()) && $gradeModel->load(Yii::$app->request->post())) {
             $transaction = Yii::$app->db->beginTransaction();
             try {
                 if ($model->save()) {
@@ -170,28 +145,43 @@ class TeacherController extends Controller
             'courses' => $courses,
         ]);
     }
-    //////////////////////////////////////////update
+     public function actionView($id)
+    {
+        $model = CourseRegistration::findOne($id);
+        if (!$model || $model->course->teacher_id !== Yii::$app->user->id) {
+            throw new ForbiddenHttpException('Access denied.');
+        }
+
+        $gradeModel = Grade::findOne([
+            'student_id' => $model->student_id,
+            'course_id' => $model->course_id,
+        ]);
+
+        return $this->render('view_teacher_students', [
+            'model' => $model,
+            'gradeModel' => $gradeModel,
+        ]);
+    }
+
+
+   
     public function actionUpdate($id)
     {
-        // التأكد أن المستخدم الحالي هو مدرس
         if (Yii::$app->user->isGuest || Yii::$app->user->identity->role !== 'teacher') {
             throw new ForbiddenHttpException('Only teachers can access this page.');
         }
 
         $teacherId = Yii::$app->user->id;
 
-        // جلب نموذج تسجيل الطالب باستخدام الـ ID
         $model = CourseRegistration::findOne($id);
         if (!$model) {
             throw new NotFoundHttpException('Registration not found.');
         }
 
-        // تأكد أن الكورس يعود للمدرس الحالي
         if ($model->course->teacher_id !== $teacherId) {
             throw new ForbiddenHttpException('You do not have permission to update this registration.');
         }
 
-        // جلب نموذج الدرجة المرتبط بنفس الطالب والكورس
         $gradeModel = Grade::findOne([
             'student_id' => $model->student_id,
             'course_id' => $model->course_id,
@@ -203,7 +193,6 @@ class TeacherController extends Controller
             $gradeModel->course_id = $model->course_id;
         }
 
-        // جلب الطلاب والكورسات الخاصة بالمدرس
         $students = CourseRegistration::find()
             ->joinWith(['student', 'course'])
             ->where(['course.teacher_id' => $teacherId])
@@ -220,7 +209,6 @@ class TeacherController extends Controller
             ->indexBy('id')
             ->column();
 
-        // معالجة التحديث
         if ($model->load(Yii::$app->request->post()) && $gradeModel->load(Yii::$app->request->post())) {
             $transaction = Yii::$app->db->beginTransaction();
             try {
@@ -248,12 +236,6 @@ class TeacherController extends Controller
         ]);
     }
 
-//////////////////////////////////////////////////////doucment
-
-
-
-
-    ///////////////////////////////////////delete
     public function actionDelete($id)
     {
         $model = CourseRegistration::findOne($id);

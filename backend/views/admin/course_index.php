@@ -71,10 +71,7 @@ $this->title = '📚 Courses';
                         <?= Html::a('<i class="fas fa-trash"></i>', ['delete_course', 'id' => $course->id], [
                                     'class' => 'btn btn-sm btn-danger',
                                     'title' => 'Delete',
-                                    'data' => [
-                                        'confirm' => 'Are you sure you want to delete this course?',
-                                        'method' => 'post',
-                                    ],
+                                     
                                 ]) ?>
                     </td>
                 </tr>

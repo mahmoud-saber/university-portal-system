@@ -5,6 +5,7 @@ namespace backend\controllers;
 use Yii;
 use common\models\User;
 use yii\web\Controller;
+use common\models\Grade;
 use common\models\Course;
 use yii\web\UploadedFile;
 use common\models\Document;
@@ -15,6 +16,8 @@ use common\models\CourseRegistration;
 
 class StudentController extends Controller
 {
+    public $layout = 'student';
+
     public function behaviors()
     {
         return [
@@ -32,8 +35,6 @@ class StudentController extends Controller
             ],
         ];
     }
-    ///////////////////////////////////////////////////////////////////////
-    //get information student
     public function actionProfile()
     {
         $studentId = Yii::$app->user->id;
@@ -51,19 +52,15 @@ class StudentController extends Controller
         ]);
     }
 
-    public $layout = 'student';
-    ///////////////////////////////////index////////////////
     public function actionIndex()
     {
-        // التحقق من أن المستخدم الحالي طالب
-        if (Yii::$app->user->isGuest || Yii::$app->user->identity->role !== 'student') {
-            throw new \yii\web\ForbiddenHttpException('Only students can access this page.');
+         if (Yii::$app->user->isGuest || Yii::$app->user->identity->role !== 'student') {
+            throw new ForbiddenHttpException('Only students can access this page.');
         }
 
         $studentId = Yii::$app->user->id;
         $search = Yii::$app->request->get('q');
 
-        // البحث عن الكورسات المسجل فيها الطالب فقط
         $query = Course::find()
             ->joinWith(['students', 'teacher'])
             ->distinct()
@@ -74,7 +71,7 @@ class StudentController extends Controller
                 'or',
                 ['like', 'course.name', $search],
                 ['like', 'course.description', $search],
-                ['like', 'user.username', $search]  //  
+                ['like', 'user.username', $search]    
             ]);
         }
 
@@ -87,20 +84,18 @@ class StudentController extends Controller
     }
 
 
-    // create student_courses //////////////////////////////////////
+    // create student_courses /
     public function actionCreate()
     {
         if (Yii::$app->user->isGuest || Yii::$app->user->identity->role !== 'student') {
-            throw new \yii\web\ForbiddenHttpException('Only students can access this page.');
+            throw new ForbiddenHttpException('Only students can access this page.');
         }
 
-        $model = new \common\models\CourseRegistration();
+        $model = new CourseRegistration();
 
-        // إضافة بيانات الطالب الحالي تلقائيًا
-        $model->student_id = Yii::$app->user->id;
+         $model->student_id = Yii::$app->user->id;
 
-        // جلب الكورسات المتاحة
-        $courses = \common\models\Course::find()->all();
+         $courses = Course::find()->all();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             Yii::$app->session->setFlash('success', '✅ You have been registered in the course.');
@@ -114,7 +109,6 @@ class StudentController extends Controller
     }
 
 
-    /////////////////////////////////////////////end view
     public function actionView($id)
     {
         $course = Course::findOne($id);
@@ -123,14 +117,12 @@ class StudentController extends Controller
             throw new NotFoundHttpException('Course not found.');
         }
 
-        // السماح فقط للطلاب المسجّلين بالكورس بمشاهدته
         if (Yii::$app->user->isGuest || Yii::$app->user->identity->role !== 'student') {
             throw new ForbiddenHttpException('Only students can access this page.');
         }
 
         $studentId = Yii::$app->user->id;
 
-        // التحقق من أن الطالب مسجّل في هذا الكورس
         $isRegistered = CourseRegistration::find()
             ->where(['student_id' => $studentId, 'course_id' => $id])
             ->exists();
@@ -143,7 +135,7 @@ class StudentController extends Controller
             'model' => $course,
         ]);
     }
-    ////////////////////////////////////////////////update student_course////////////////////
+    ///////update student_course
 
     public function actionUpdate($student_id, $course_id)
     {
@@ -170,7 +162,7 @@ class StudentController extends Controller
             'courses' => $courses,
         ]);
     }
-    ///////////////////////////////////////
+    ///////////Grades
 
     public function actionGrades()
     {
@@ -181,10 +173,9 @@ class StudentController extends Controller
         $studentId = Yii::$app->user->id;
 
         $query = CourseRegistration::find()
-            ->joinWith(['course.teacher']) // فقط course و teacher
+            ->joinWith(['course.teacher']) 
             ->where(['student_id' => $studentId]);
 
-        // دعم البحث
         $search = Yii::$app->request->get('q');
         if (!empty($search)) {
             $query->andFilterWhere([
@@ -196,17 +187,15 @@ class StudentController extends Controller
 
         $registrations = $query->orderBy(['created_at' => SORT_DESC])->all();
 
-        // جلب الدرجات يدويًا
         foreach ($registrations as $reg) {
-            $grade = \common\models\Grade::find()
+            $grade = Grade::find()
                 ->where([
                     'student_id' => $reg->student_id,
                     'course_id' => $reg->course_id,
                 ])
                 ->one();
 
-            // وضع الدرجة في خاصية مؤقتة للعرض
-            $reg->grade_value = $grade ? $grade->grade : 'N/A';
+             $reg->grade_value = $grade ? $grade->grade : 'N/A';
         }
 
         return $this->render('grades_student', [
@@ -215,7 +204,7 @@ class StudentController extends Controller
         ]);
     }
 
-    ///////////////////////////////////////////////////////////////
+    //////////////Document
     public function actionDocument()
     {
         if (Yii::$app->user->isGuest) {
@@ -227,33 +216,28 @@ class StudentController extends Controller
 
         if ($user->role === 'student') {
 
-            // احصل على معرف المواد التي سجل فيها الطالب
-            $courseIds = CourseRegistration::find()
+             $courseIds = CourseRegistration::find()
                 ->select('course_id')
                 ->where(['student_id' => $userId])
                 ->column();
 
-            // احصل على معرفات المدرسين الذين يدرّسون تلك المواد
-            $teacherIds = Course::find()
+             $teacherIds = Course::find()
                 ->select('teacher_id')
                 ->where(['id' => $courseIds])
                 ->column();
 
-            // اجلب المستندات التي رفعها هؤلاء المدرسون
-            $documents = Document::find()
+             $documents = Document::find()
                 ->where(['user_id' => $teacherIds])
                 ->orderBy(['created_at' => SORT_DESC])
                 ->all();
         } elseif ($user->role === 'teacher') {
 
-            // المواد التي يدرّسها المدرس
-            $courseIds =Course::find()
+             $courseIds = Course::find()
                 ->select('id')
                 ->where(['teacher_id' => $userId])
                 ->column();
 
-            // المستندات المرتبطة بهذه المواد
-            $documents = Document::find()
+             $documents = Document::find()
                 ->where(['course_id' => $courseIds])
                 ->orderBy(['created_at' => SORT_DESC])
                 ->all();
@@ -276,15 +260,12 @@ class StudentController extends Controller
             $uploadedFile = UploadedFile::getInstance($model, 'file_path');
 
             if ($uploadedFile) {
-                // حفظ الاسم الأصلي
-                $model->original_name = $uploadedFile->name;
+                 $model->original_name = $uploadedFile->name;
 
-                // إنشاء اسم فريد للملف
-                $uniqueName = uniqid() . '.' . $uploadedFile->extension;
+                 $uniqueName = uniqid() . '.' . $uploadedFile->extension;
                 $uploadPath = Yii::getAlias('@webroot/assignments/') . $uniqueName;
 
-                // محاولة حفظ الملف على السيرفر
-                if ($uploadedFile->saveAs($uploadPath)) {
+                 if ($uploadedFile->saveAs($uploadPath)) {
                     $model->file_path = 'assignments/' . $uniqueName;
                     $model->file_type = $uploadedFile->type;
                     $model->created_at = date('Y-m-d H:i:s');

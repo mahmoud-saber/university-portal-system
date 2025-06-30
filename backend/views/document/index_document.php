@@ -46,10 +46,7 @@ $this->title = '📄 My Documents';
                     <?= Html::a('📝 Update', ['update', 'id' => $doc->id], ['class' => 'btn btn-sm btn-warning']) ?>
                     <?= Html::a('🗑️ Delete', ['delete', 'id' => $doc->id], [
                                 'class' => 'btn btn-sm btn-danger',
-                                'data' => [
-                                    'confirm' => 'Are you sure you want to delete this document?',
-                                    'method' => 'post',
-                                ],
+                                 'title' => 'Delete',
                             ]) ?>
                 </td>
             </tr>

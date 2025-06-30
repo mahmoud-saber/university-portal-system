@@ -113,7 +113,7 @@ class AdminController extends Controller
 
 
     /////students////////////////////////
-    public function actionIndexStudent()
+    public function actionIndex_student()
     {
         $query = User::find()->where(['role' => 'student']);
 
@@ -133,7 +133,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function actionCreateStudent()
+    public function actionCreate_student()
     {
         $model = new User();
         $model->role = 'student';
@@ -145,7 +145,7 @@ class AdminController extends Controller
 
         return $this->render('student_create', ['model' => $model]);
     }
-    public function actionUpdateStudent($id)
+    public function actionUpdate_student($id)
     {
         $model = User::findOne($id);
         if (!$model || $model->role !== 'student') {
@@ -159,7 +159,7 @@ class AdminController extends Controller
 
         return $this->render('student_update', ['model' => $model]);
     }
-    public function actionDeleteStudent($id)
+    public function actionDelete_student($id)
     {
         $model = User::findOne($id);
         if (!$model || $model->role !== 'student') {
@@ -173,7 +173,7 @@ class AdminController extends Controller
 
     /////////////////////////// Courses //////////////////////////
 
-    public function actionIndexCourse()
+    public function actionIndex_course()
     {
         $query = Course::find();
         $search = Yii::$app->request->get('q');
@@ -188,7 +188,7 @@ class AdminController extends Controller
     }
 
 
-    public function actionCreateCourse()
+    public function actionCreate_course()
     {
         $model = new Course();
 
@@ -210,7 +210,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function actionUpdateCourse($id)
+    public function actionUpdate_course($id)
     {
         $model = Course::findOne($id);
         if (!$model) {
@@ -235,7 +235,7 @@ class AdminController extends Controller
     }
 
 
-    public function actionDeleteCourse($id)
+    public function actionDelete_course($id)
     {
         $model = Course::findOne($id);
         if ($model) {

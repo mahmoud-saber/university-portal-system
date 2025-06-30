@@ -57,9 +57,7 @@ $this->title = 'My Course Registrations';
                 <?= Html::a('Add', ['update', 'id' => $reg->id], ['class' => 'btn btn-sm btn-warning']) ?>
                 <?= Html::a('Delete', ['delete', 'id' => $reg->id], [
                             'class' => 'btn btn-sm btn-danger',
-                            'data' => [
-                                 'method' => 'post',
-                            ],
+                            
                         ]) ?>
             </td>
         </tr>

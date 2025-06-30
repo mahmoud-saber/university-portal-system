@@ -66,7 +66,6 @@ $this->title = '👨‍🏫 Teachers';
                         <?= Html::a('<i class="fas fa-trash"></i>', ['delete', 'id' => $teacher->id], [
                                     'class' => 'btn btn-sm btn-danger',
                                     'title' => 'Delete',
-                                    'data' => ['confirm' => 'Are you sure you want to delete this teacher?', 'method' => 'post']
                                 ]) ?>
                     </td>
                 </tr>

@@ -172,12 +172,10 @@ class User extends ActiveRecord implements IdentityInterface
     {
         if (parent::beforeSave($insert)) {
 
-            // If plainPassword is provided, hash it and save
             if (!empty($this->plainPassword)) {
                 $this->setPassword($this->plainPassword);
             }
 
-            // Generate auth key for new records
             if ($this->isNewRecord) {
                 $this->generateAuthKey();
                 $this->generateEmailVerificationToken();

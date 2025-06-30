@@ -9,6 +9,7 @@ use yii\web\UploadedFile;
 use common\models\Document;
 use yii\filters\AccessControl;
 use yii\web\NotFoundHttpException;
+use yii\web\ForbiddenHttpException;
 use common\models\CourseRegistration;
 
 class DocumentController extends Controller
@@ -34,7 +35,6 @@ class DocumentController extends Controller
     }
 
 
-    //////////////////////////////////////////////////////index 
 
     public function actionIndex()
     {
@@ -50,9 +50,6 @@ class DocumentController extends Controller
 
 
 
-    /////////////////////////////////////////////////create
-
-
     public function actionCreate()
     {
         $model = new Document();
@@ -64,14 +61,11 @@ class DocumentController extends Controller
             $uploadedFile = UploadedFile::getInstance($model, 'file_path');
 
             if ($uploadedFile) {
-                // حفظ الاسم الأصلي
                 $model->original_name = $uploadedFile->name;
 
-                // إنشاء اسم فريد للملف
                 $uniqueName = uniqid() . '.' . $uploadedFile->extension;
                 $uploadPath = Yii::getAlias('@webroot/uploads/') . $uniqueName;
 
-                // محاولة حفظ الملف على السيرفر
                 if ($uploadedFile->saveAs($uploadPath)) {
                     $model->file_path = 'uploads/' . $uniqueName;
                     $model->file_type = $uploadedFile->type;
@@ -100,7 +94,6 @@ class DocumentController extends Controller
 
 
 
-    ////////////////////////////////////////////////update  
     public function actionUpdate($id)
     {
         $model = Document::findOne($id);
@@ -115,15 +108,12 @@ class DocumentController extends Controller
 
             $uploadedFile = UploadedFile::getInstance($model, 'file_path');
             if ($uploadedFile) {
-                // حذف الملف القديم إذا كان موجودًا
                 if (file_exists(Yii::getAlias('@webroot/uploads/') . basename($oldFilePath))) {
                     unlink(Yii::getAlias('@webroot/uploads/') . basename($oldFilePath));
                 }
 
-                // حفظ الاسم الأصلي
                 $model->original_name = $uploadedFile->name;
 
-                // حفظ الملف الجديد باسم مشفر
                 $uniqueName = uniqid() . '.' . $uploadedFile->extension;
                 $uploadPath = Yii::getAlias('@webroot/uploads/') . $uniqueName;
                 if ($uploadedFile->saveAs($uploadPath)) {
@@ -133,7 +123,6 @@ class DocumentController extends Controller
                     return $this->redirect(['update', 'id' => $id]);
                 }
             } else {
-                // إذا لم يتم رفع ملف جديد، احتفظ بالقديم
                 $model->file_path = $oldFilePath;
             }
 
@@ -148,7 +137,25 @@ class DocumentController extends Controller
 
 
 
-    ///////////////////////////////////////////////////////////////////
+    public function actionDelete($id)
+    {
+        $model = Document::findOne($id);
+        if (!$model) {
+            throw new NotFoundHttpException('Document not found.');
+        }
+
+        $filePath = Yii::getAlias('@webroot') . '/uploads/' . basename($model->file_path);
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+
+        $model->delete();
+        Yii::$app->session->setFlash('success', 'Document deleted successfully.');
+        return $this->redirect(['index']);
+    }
+
+
+    //Assignment
     public function actionAssignment()
     {
         if (Yii::$app->user->isGuest) {
@@ -159,68 +166,41 @@ class DocumentController extends Controller
         $user = Yii::$app->user->identity;
 
         if ($user->role === 'student') {
-            // جلب المواد المسجل فيها الطالب
             $courseIds = CourseRegistration::find()
                 ->select('course_id')
                 ->where(['student_id' => $userId])
                 ->column();
 
-            // جلب معرفات المدرسين لهذه المواد
             $teacherIds = Course::find()
                 ->select('teacher_id')
                 ->where(['id' => $courseIds])
                 ->column();
 
-            // جلب المستندات المرفوعة من هؤلاء المدرسين
-            $documents = \common\models\Document::find()
+            $documents = Document::find()
                 ->where(['user_id' => $teacherIds])
                 ->orderBy(['created_at' => SORT_DESC])
                 ->all();
         } elseif ($user->role === 'teacher') {
-            // المواد التي يدرّسها المدرس
-            $courseIds = \common\models\Course::find()
+            $courseIds = Course::find()
                 ->select('id')
                 ->where(['teacher_id' => $userId])
                 ->column();
 
-            // الطلاب المسجلين في تلك المواد
             $studentIds = CourseRegistration::find()
                 ->select('student_id')
                 ->where(['course_id' => $courseIds])
                 ->column();
 
-            // جلب المستندات التي رفعها هؤلاء الطلاب
             $documents = Document::find()
                 ->where(['user_id' => $studentIds])
                 ->orderBy(['created_at' => SORT_DESC])
                 ->all();
         } else {
-            throw new \yii\web\ForbiddenHttpException('Access denied.');
+            throw new ForbiddenHttpException('Access denied.');
         }
 
         return $this->render('assignment', [
             'documents' => $documents,
         ]);
-    }
-
-
-    ///////////////////////////////////////////////////////delete
-
-    public function actionDelete($id)
-    {
-        $model = Document::findOne($id);
-        if (!$model) {
-            throw new NotFoundHttpException('Document not found.');
-        }
-
-        // حذف الملف من السيرفر إن وجد
-        $filePath = Yii::getAlias('@webroot') . '/uploads/' . basename($model->file_path);
-        if (file_exists($filePath)) {
-            unlink($filePath);
-        }
-
-        $model->delete();
-        Yii::$app->session->setFlash('success', 'Document deleted successfully.');
-        return $this->redirect(['index']);
     }
 }
