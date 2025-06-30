@@ -8,6 +8,7 @@ use yii\web\Controller;
 use common\models\Grade;
 use common\models\Course;
  use yii\filters\AccessControl;
+use yii\helpers\ArrayHelper;
 use yii\web\NotFoundHttpException;
 use yii\web\ForbiddenHttpException;
 use common\models\CourseRegistration;
@@ -52,17 +53,15 @@ class TeacherController extends Controller
 
     public function actionIndex()
     {
-        // تأكد أن المستخدم الحالي هو معلم
-        if (Yii::$app->user->isGuest || Yii::$app->user->identity->role !== 'teacher') {
-            throw new \yii\web\ForbiddenHttpException('Only teachers can access this page.');
+         if (Yii::$app->user->isGuest || Yii::$app->user->identity->role !== 'teacher') {
+            throw new ForbiddenHttpException('Only teachers can access this page.');
         }
 
         $teacherId = Yii::$app->user->id;
         $search = Yii::$app->request->get('q');
 
-        // جلب التسجيلات التي تخص الكورسات التي يدرّسها المعلم
-        $query = CourseRegistration::find()
-            ->joinWith(['student', 'course.teacher']) // تأكد من توفر العلاقات: student و course
+         $query = CourseRegistration::find()
+            ->joinWith(['student', 'course.teacher']) 
             ->where(['course.teacher_id' => $teacherId]);
 
         if (!empty($search)) {
@@ -99,7 +98,7 @@ class TeacherController extends Controller
     {
         $model = CourseRegistration::findOne($id);
         if (!$model || $model->course->teacher_id !== Yii::$app->user->id) {
-            throw new \yii\web\ForbiddenHttpException('Access denied.');
+            throw new ForbiddenHttpException('Access denied.');
         }
 
         $gradeModel = \common\models\Grade::findOne([
@@ -135,7 +134,7 @@ class TeacherController extends Controller
             ->asArray()
             ->all();
 
-        $studentList = \yii\helpers\ArrayHelper::map($students, 'id', 'username');
+        $studentList = ArrayHelper::map($students, 'id', 'username');
 
         // جلب الكورسات الخاصة بالمدرس فقط
         $courses = Course::find()
@@ -176,7 +175,7 @@ class TeacherController extends Controller
     {
         // التأكد أن المستخدم الحالي هو مدرس
         if (Yii::$app->user->isGuest || Yii::$app->user->identity->role !== 'teacher') {
-            throw new \yii\web\ForbiddenHttpException('Only teachers can access this page.');
+            throw new ForbiddenHttpException('Only teachers can access this page.');
         }
 
         $teacherId = Yii::$app->user->id;
@@ -184,12 +183,12 @@ class TeacherController extends Controller
         // جلب نموذج تسجيل الطالب باستخدام الـ ID
         $model = CourseRegistration::findOne($id);
         if (!$model) {
-            throw new \yii\web\NotFoundHttpException('Registration not found.');
+            throw new NotFoundHttpException('Registration not found.');
         }
 
         // تأكد أن الكورس يعود للمدرس الحالي
         if ($model->course->teacher_id !== $teacherId) {
-            throw new \yii\web\ForbiddenHttpException('You do not have permission to update this registration.');
+            throw new ForbiddenHttpException('You do not have permission to update this registration.');
         }
 
         // جلب نموذج الدرجة المرتبط بنفس الطالب والكورس
@@ -213,7 +212,7 @@ class TeacherController extends Controller
             ->asArray()
             ->all();
 
-        $studentList = \yii\helpers\ArrayHelper::map($students, 'id', 'username');
+        $studentList = ArrayHelper::map($students, 'id', 'username');
 
         $courses = Course::find()
             ->where(['teacher_id' => $teacherId])

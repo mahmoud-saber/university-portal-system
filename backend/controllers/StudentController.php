@@ -125,7 +125,7 @@ class StudentController extends Controller
 
         // السماح فقط للطلاب المسجّلين بالكورس بمشاهدته
         if (Yii::$app->user->isGuest || Yii::$app->user->identity->role !== 'student') {
-            throw new \yii\web\ForbiddenHttpException('Only students can access this page.');
+            throw new ForbiddenHttpException('Only students can access this page.');
         }
 
         $studentId = Yii::$app->user->id;
@@ -136,7 +136,7 @@ class StudentController extends Controller
             ->exists();
 
         if (!$isRegistered) {
-            throw new \yii\web\ForbiddenHttpException('You are not registered in this course.');
+            throw new ForbiddenHttpException('You are not registered in this course.');
         }
 
         return $this->render('view_studentcourse', [
@@ -228,37 +228,37 @@ class StudentController extends Controller
         if ($user->role === 'student') {
 
             // احصل على معرف المواد التي سجل فيها الطالب
-            $courseIds = \common\models\CourseRegistration::find()
+            $courseIds = CourseRegistration::find()
                 ->select('course_id')
                 ->where(['student_id' => $userId])
                 ->column();
 
             // احصل على معرفات المدرسين الذين يدرّسون تلك المواد
-            $teacherIds = \common\models\Course::find()
+            $teacherIds = Course::find()
                 ->select('teacher_id')
                 ->where(['id' => $courseIds])
                 ->column();
 
             // اجلب المستندات التي رفعها هؤلاء المدرسون
-            $documents = \common\models\Document::find()
+            $documents = Document::find()
                 ->where(['user_id' => $teacherIds])
                 ->orderBy(['created_at' => SORT_DESC])
                 ->all();
         } elseif ($user->role === 'teacher') {
 
             // المواد التي يدرّسها المدرس
-            $courseIds = \common\models\Course::find()
+            $courseIds =Course::find()
                 ->select('id')
                 ->where(['teacher_id' => $userId])
                 ->column();
 
             // المستندات المرتبطة بهذه المواد
-            $documents = \common\models\Document::find()
+            $documents = Document::find()
                 ->where(['course_id' => $courseIds])
                 ->orderBy(['created_at' => SORT_DESC])
                 ->all();
         } else {
-            throw new \yii\web\ForbiddenHttpException('Access denied.');
+            throw new ForbiddenHttpException('Access denied.');
         }
 
         return $this->render('index_document', [
@@ -267,7 +267,7 @@ class StudentController extends Controller
     }
     public function actionAnswer()
     {
-        $model = new \common\models\Document();
+        $model = new Document();
 
         if (Yii::$app->request->isPost) {
             $model->load(Yii::$app->request->post());

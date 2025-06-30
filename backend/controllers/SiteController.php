@@ -94,7 +94,7 @@ class SiteController extends Controller
             case 'student':
                 return $this->redirect(['student/dashboard']);
             default:
-                return $this->goHome(); // fallback
+                return $this->goHome(); 
         }
     }
 

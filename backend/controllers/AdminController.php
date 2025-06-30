@@ -24,15 +24,13 @@ class AdminController extends Controller
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function () {
-                            return \Yii::$app->user->identity->role === 'admin';
+                            return Yii::$app->user->identity->role === 'admin';
                         },
                     ],
                 ],
             ],
         ];
     }
-    //views admin/dashboard
-    // This action renders the admin dashboard
     public function actionDashboard()
     {
         $teacherCount = User::find()->where(['role' => 'teacher'])->count();
@@ -46,9 +44,8 @@ class AdminController extends Controller
         ]);
     }
 
+    ///////////Techer/////////////////
 
-
-    //get information admin
     public function actionProfile()
     {
         $adminId = Yii::$app->user->id;
@@ -57,7 +54,6 @@ class AdminController extends Controller
     }
 
 
-    //views teachers/index
     public function actionIndex()
     {
         $query = User::find()->where(['role' => 'teacher']);
@@ -78,8 +74,6 @@ class AdminController extends Controller
         ]);
     }
 
-    //views teachers/create
-    // This action creates a new teacher user
     public function actionCreate()
     {
         $model = new User();
@@ -92,8 +86,6 @@ class AdminController extends Controller
 
         return $this->render('teacher_create', ['model' => $model]);
     }
-    //views teachers/update
-    // This action updates an existing teacher user
     public function actionUpdate($id)
     {
         $model = User::findOne($id);
@@ -108,8 +100,6 @@ class AdminController extends Controller
 
         return $this->render('teacher_update', ['model' => $model]);
     }
-    // delete teacher
-    // This action deletes a teacher user
     public function actionDelete($id)
     {
         $model = User::findOne($id);
@@ -122,9 +112,8 @@ class AdminController extends Controller
     }
 
 
-    ///////////////////////////////////////////////////////////students
-    //views teachers/index
-    public function actionIndex_student()
+    /////students////////////////////////
+    public function actionIndexStudent()
     {
         $query = User::find()->where(['role' => 'student']);
 
@@ -144,9 +133,7 @@ class AdminController extends Controller
         ]);
     }
 
-    //views teachers/create
-    // This action creates a new teacher user
-    public function actionCreate_student()
+    public function actionCreateStudent()
     {
         $model = new User();
         $model->role = 'student';
@@ -158,8 +145,7 @@ class AdminController extends Controller
 
         return $this->render('student_create', ['model' => $model]);
     }
-    // This action updates an existing student user
-    public function actionUpdate_student($id)
+    public function actionUpdateStudent($id)
     {
         $model = User::findOne($id);
         if (!$model || $model->role !== 'student') {
@@ -173,9 +159,7 @@ class AdminController extends Controller
 
         return $this->render('student_update', ['model' => $model]);
     }
-    //delete student
-    // This action deletes a teacher user
-    public function actionDelete_student($id)
+    public function actionDeleteStudent($id)
     {
         $model = User::findOne($id);
         if (!$model || $model->role !== 'student') {
@@ -189,7 +173,7 @@ class AdminController extends Controller
 
     /////////////////////////// Courses //////////////////////////
 
-    public function actionIndex_course()
+    public function actionIndexCourse()
     {
         $query = Course::find();
         $search = Yii::$app->request->get('q');
@@ -204,7 +188,7 @@ class AdminController extends Controller
     }
 
 
-    public function actionCreate_course()
+    public function actionCreateCourse()
     {
         $model = new Course();
 
@@ -226,7 +210,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function actionUpdate_course($id)
+    public function actionUpdateCourse($id)
     {
         $model = Course::findOne($id);
         if (!$model) {
@@ -251,7 +235,7 @@ class AdminController extends Controller
     }
 
 
-    public function actionDelete_course($id)
+    public function actionDeleteCourse($id)
     {
         $model = Course::findOne($id);
         if ($model) {

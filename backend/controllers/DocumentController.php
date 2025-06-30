@@ -4,10 +4,12 @@ namespace backend\controllers;
 
 use Yii;
 use yii\web\Controller;
+use common\models\Course;
 use yii\web\UploadedFile;
 use common\models\Document;
 use yii\filters\AccessControl;
 use yii\web\NotFoundHttpException;
+use common\models\CourseRegistration;
 
 class DocumentController extends Controller
 {
@@ -36,7 +38,7 @@ class DocumentController extends Controller
 
     public function actionIndex()
     {
-        $documents = \common\models\Document::find()
+        $documents = Document::find()
             ->where(['user_id' => Yii::$app->user->id])
             ->orderBy(['created_at' => SORT_DESC])
             ->all();
@@ -53,7 +55,7 @@ class DocumentController extends Controller
 
     public function actionCreate()
     {
-        $model = new \common\models\Document();
+        $model = new Document();
 
         if (Yii::$app->request->isPost) {
             $model->load(Yii::$app->request->post());
@@ -158,13 +160,13 @@ class DocumentController extends Controller
 
         if ($user->role === 'student') {
             // جلب المواد المسجل فيها الطالب
-            $courseIds = \common\models\CourseRegistration::find()
+            $courseIds = CourseRegistration::find()
                 ->select('course_id')
                 ->where(['student_id' => $userId])
                 ->column();
 
             // جلب معرفات المدرسين لهذه المواد
-            $teacherIds = \common\models\Course::find()
+            $teacherIds = Course::find()
                 ->select('teacher_id')
                 ->where(['id' => $courseIds])
                 ->column();
@@ -182,13 +184,13 @@ class DocumentController extends Controller
                 ->column();
 
             // الطلاب المسجلين في تلك المواد
-            $studentIds = \common\models\CourseRegistration::find()
+            $studentIds = CourseRegistration::find()
                 ->select('student_id')
                 ->where(['course_id' => $courseIds])
                 ->column();
 
             // جلب المستندات التي رفعها هؤلاء الطلاب
-            $documents = \common\models\Document::find()
+            $documents = Document::find()
                 ->where(['user_id' => $studentIds])
                 ->orderBy(['created_at' => SORT_DESC])
                 ->all();
