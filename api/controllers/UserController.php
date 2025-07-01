@@ -1,10 +1,12 @@
 <?php
 
-namespace api\modules\v1\controllers;
+namespace api\controllers;
 
+use common\models\User;
 use yii\rest\ActiveController;
 
 class UserController extends ActiveController
 {
-    public $modelClass = 'common\models\User'; // or your custom model
+   public $modelClass= User::class;
+
 }
