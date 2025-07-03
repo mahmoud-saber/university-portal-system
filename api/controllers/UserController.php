@@ -13,8 +13,7 @@ class UserController extends Controller
     {
         $behaviors = parent::behaviors();
 
-        // ضبط التنسيق ليكون JSON
-        $behaviors['contentNegotiator']['formats']['application/json'] = Response::FORMAT_JSON;
+         $behaviors['contentNegotiator']['formats']['application/json'] = Response::FORMAT_JSON;
 
         return $behaviors;
     }
