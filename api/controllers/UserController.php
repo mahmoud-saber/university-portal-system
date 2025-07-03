@@ -6,7 +6,6 @@ use Yii;
 use yii\web\Response;
 use common\models\User;
 use yii\rest\Controller;
-use yii\helpers\ArrayHelper;
 
 class UserController extends Controller
 {
