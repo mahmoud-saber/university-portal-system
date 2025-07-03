@@ -30,7 +30,7 @@ class UserController extends Controller
                 'username' => $user->username,
                 'Email' => $user->email,
                 'role' => $user->role,
-                'Joined' => Yii::$app->formatter->asDate($user->created_at),
+                'Joined' => Yii::$app->formatter->asDate($user->created_at), 
             ];
         }
 

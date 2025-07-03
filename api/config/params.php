@@ -2,3 +2,4 @@
 return [
     'adminEmail' => 'admin@example.com',
 ];
+ 

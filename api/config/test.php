@@ -15,4 +15,4 @@ return [
             'messageClass' => \yii\symfonymailer\Message::class
         ]
     ],
-];
+]; 
