@@ -6,38 +6,113 @@ use Yii;
 use yii\web\Response;
 use common\models\User;
 use yii\rest\Controller;
+use yii\filters\AccessControl;
+use yii\web\ForbiddenHttpException;
 
 class UserController extends Controller
 {
+
     public function behaviors()
     {
         $behaviors = parent::behaviors();
 
-         $behaviors['contentNegotiator']['formats']['application/json'] = Response::FORMAT_JSON;
+        $behaviors['access'] = [
+            'class' => \yii\filters\AccessControl::class,
+            'only' => ['signup', 'login'],
+            'rules' => [
+                [
+                    'allow' => true,
+                    'actions' => ['signup', 'login'],
+                    'roles' => ['?'],
+                ],
+            ],
+        ];
+
+        // جعل JSON هو التنسيق الافتراضي
+        $behaviors['contentNegotiator']['formats']['application/json'] = \yii\web\Response::FORMAT_JSON;
 
         return $behaviors;
     }
 
-    public function actionIndex()
+
+    public function beforeAction($action)
     {
-        $users = User::find()->all();
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
 
-        $data = [];
+        $publicActions = ['signup', 'login'];
 
-        foreach ($users as $user) {
-            $data[] = [
-                'id' => $user->id,
-                'username' => $user->username,
-                'Email' => $user->email,
-                'role' => $user->role,
-                'Joined' => Yii::$app->formatter->asDate($user->created_at), 
-            ];
+        // السماح للأكشنات العامة بدون التحقق من تسجيل الدخول
+        if (in_array($action->id, $publicActions)) {
+            return true;
+        }
+
+        // التحقق من تسجيل الدخول
+        if (Yii::$app->user->isGuest) {
+            throw new ForbiddenHttpException('You are not allowed to access this resource.');
+        }
+
+        // التحقق من أن المستخدم يملك الدور admin فقط
+        if (!Yii::$app->user->can('admin')) {
+            throw new ForbiddenHttpException('Only admin users can access this endpoint.');
+        }
+
+        return true;
+    }
+
+
+    // public function actionIndex()
+    // {
+    //     $users = User::find()->all();
+
+    //     $data = [];
+
+    //     foreach ($users as $user) {
+    //         $data[] = [
+    //             'id' => $user->id,
+    //             'username' => $user->username,
+    //             'email' => $user->email,
+    //             'role' => $user->role,
+    //             'joined' => Yii::$app->formatter->asDate($user->created_at),
+    //         ];
+    //     }
+
+    //     return [
+    //         'status' => 'success',
+    //         'message' => empty($data) ? 'No users found' : 'User list',
+    //         'data' => $data
+    //     ];
+    // }
+
+    /////////sign up
+    public function actionSignup()
+    {
+        $request = Yii::$app->request;
+        $model = new User();
+        $model->load($request->post(), '');
+
+        if ($model->validate()) {
+            $model->plainPassword = $model->plainPassword ?? Yii::$app->security->generateRandomString(8);
+            $model->setPassword($model->plainPassword);
+            $model->generateAuthKey();
+            $model->access_token = Yii::$app->security->generateRandomString(64);
+            if ($model->save()) {
+                return [
+                    'status' => 'success',
+                    'message' => 'User registered successfully.',
+                    'access_token' => $model->access_token,
+                ];
+            }
         }
 
         return [
-            'status' => 'success',
-            'message' => 'User list',
-            'data' => $data
+            'status' => 'error',
+            'message' => 'Validation failed',
+            'errors' => $model->getErrors(),
         ];
     }
+
+
+   
 }

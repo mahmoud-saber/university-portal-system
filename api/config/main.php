@@ -1,12 +1,14 @@
 <?php
 
+use yii\rest\UrlRule;
+
 $params = array_merge(
     require __DIR__ . '/../../common/config/params.php',
     require __DIR__ . '/../../common/config/params-local.php',
     require __DIR__ . '/params.php',
     require __DIR__ . '/params-local.php'
 );
- 
+
 return [
     'id' => 'app-api',
     'basePath' => dirname(__DIR__),
@@ -59,11 +61,23 @@ return [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'enableStrictParsing' => true,
+            // 'rules' => [
+            //     [
+            //         // 'class' => \yii\rest\UrlRule::class,
+            //         'controller' => ['user'],
+            //         'POST user/signup' => 'user/signup',
+            //         'pluralize' => false,
+            //     ],
+            // ],
             'rules' => [
                 [
-                    'class' => \yii\rest\UrlRule::class,
+                    'class' => UrlRule::class,
                     'controller' => ['user'],
                     'pluralize' => false,
+                    'extraPatterns' => [
+                        'POST signup' => 'signup',  // هذا يعني POST /user/signup
+                        'POST login' => 'login',
+                    ],
                 ],
             ],
         ],
