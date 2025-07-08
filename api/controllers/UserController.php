@@ -86,6 +86,38 @@ class UserController extends Controller
     // }
 
     /////////sign up
+    //    public function actionSignup()
+    // {
+    //     $request = Yii::$app->request;
+    //     $model = new User();
+    //     $model->load($request->post(), '');
+
+    //     if ($model->validate()) {
+    //         // فقط عيّن كلمة المرور كنص عادي (سيتم تشفيرها تلقائيًا في beforeSave)
+    //         $model->plainPassword = $model->plainPassword ?? Yii::$app->security->generateRandomString(8);
+
+    //         // لا داعي لاستدعاء setPassword هنا
+
+    //         $model->generateAuthKey();
+    //         $model->access_token = Yii::$app->security->generateRandomString(64);
+
+    //         if ($model->save()) {
+    //             return [
+    //                 'status' => 'success',
+    //                 'message' => 'User registered successfully.',
+    //                 'access_token' => $model->access_token,
+    //             ];
+    //         }
+    //     }
+
+    //     return [
+    //         'status' => 'error',
+    //         'message' => 'Validation failed',
+    //         'errors' => $model->getErrors(),
+    //     ];
+    // }
+
+
     public function actionSignup()
     {
         $request = Yii::$app->request;
@@ -93,10 +125,14 @@ class UserController extends Controller
         $model->load($request->post(), '');
 
         if ($model->validate()) {
+            // فقط عيّن كلمة المرور كنص عادي (سيتم تشفيرها تلقائيًا في beforeSave)
             $model->plainPassword = $model->plainPassword ?? Yii::$app->security->generateRandomString(8);
-            $model->setPassword($model->plainPassword);
+
+            // لا داعي لاستدعاء setPassword هنا
+
             $model->generateAuthKey();
             $model->access_token = Yii::$app->security->generateRandomString(64);
+
             if ($model->save()) {
                 return [
                     'status' => 'success',
@@ -114,5 +150,38 @@ class UserController extends Controller
     }
 
 
-   
+    ///////////////////login
+    public function actionLogin()
+    {
+        $request = Yii::$app->request;
+        $username = $request->post('username');
+        $password = $request->post('password');
+
+        // البحث عن المستخدم
+        $user = \common\models\User::findByUsername($username);
+
+        // التحقق من صحة البيانات
+        if (!$user || !$user->validatePassword($password)) {
+            return [
+                'success' => false,
+                'message' => 'Username or password is incorrect.',
+            ];
+        }
+
+        // توليد access_token جديد (اختياري)
+        $user->generateAccessToken();
+        $user->save(false);
+
+        // إرجاع بيانات الدخول
+        return [
+            'success' => true,
+            'access_token' => $user->access_token,
+            'user' => [
+                'id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'role' => $user->role,
+            ]
+        ];
+    }
 }
