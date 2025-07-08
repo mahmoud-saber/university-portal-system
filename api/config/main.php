@@ -1,6 +1,5 @@
 <?php
 
-use yii\rest\UrlRule;
 
 $params = array_merge(
     require __DIR__ . '/../../common/config/params.php',
@@ -18,6 +17,7 @@ return [
 
     'components' => [
         'request' => [
+            'cookieValidationKey' => 'a8DkS1zE9rLtBq0MxW5UoC3hY2vNfJgL', // مفتاح سري عشوائي
             'parsers' => [
                 'application/json' => 'yii\web\JsonParser',
             ],
@@ -57,38 +57,11 @@ return [
             'timeFormat' => 'php:H:i:s',
         ],
 
-        'urlManager' => [
-            'enablePrettyUrl' => true,
-            'showScriptName' => false,
-            'enableStrictParsing' => true,
-            // 'rules' => [
-            //     [
-            //         // 'class' => \yii\rest\UrlRule::class,
-            //         'controller' => ['user'],
-            //         'POST user/signup' => 'user/signup',
-            //         'pluralize' => false,
-            //     ],
-            // ],
-            'rules' => [
-                [
-                    'class' => UrlRule::class,
-                    'controller' => ['user'],
-                    'pluralize' => false,
-                    'extraPatterns' => [
-                        'POST signup' => 'signup',  // هذا يعني POST /user/signup
-                        'POST login' => 'login',
-                    ],
-                ],
-            ],
-        ],
+        'urlManager' => require __DIR__ . '/urlManager.php',
+
     ],
 
-    'modules' => [
-        'v1' => [
-            'basePath' => '@api/modules/v1',
-            'class' => 'api\modules\v1\Module',
-        ],
-    ],
+
 
     'params' => $params,
 ];

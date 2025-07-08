@@ -7,7 +7,9 @@ use yii\web\Response;
 use common\models\User;
 use yii\rest\Controller;
 use yii\filters\AccessControl;
+use api\resources\UserResource;
 use yii\web\ForbiddenHttpException;
+use yii\web\UnauthorizedHttpException;
 
 class UserController extends Controller
 {
@@ -16,24 +18,34 @@ class UserController extends Controller
     {
         $behaviors = parent::behaviors();
 
+        $behaviors['contentNegotiator']['formats']['application/json'] = Response::FORMAT_JSON;
+
+        // مصادقة التوكن Bearer Token
+        $behaviors['authenticator'] = [
+            'class' => \yii\filters\auth\HttpBearerAuth::class,
+            'only' => ['profile', 'logout'],
+        ];
+
+        // صلاحيات الوصول
         $behaviors['access'] = [
-            'class' => \yii\filters\AccessControl::class,
-            'only' => ['signup', 'login'],
+            'class' => AccessControl::class,
+            'only' => ['signup', 'login', 'profile', 'logout'],
             'rules' => [
                 [
                     'allow' => true,
                     'actions' => ['signup', 'login'],
                     'roles' => ['?'],
                 ],
+                [
+                    'allow' => true,
+                    'actions' => ['profile', 'logout'],
+                    'roles' => ['@'],
+                ],
             ],
         ];
 
-        // جعل JSON هو التنسيق الافتراضي
-        $behaviors['contentNegotiator']['formats']['application/json'] = \yii\web\Response::FORMAT_JSON;
-
         return $behaviors;
     }
-
 
     public function beforeAction($action)
     {
@@ -42,30 +54,17 @@ class UserController extends Controller
         }
 
         $publicActions = ['signup', 'login'];
-
-        // السماح للأكشنات العامة بدون التحقق من تسجيل الدخول
         if (in_array($action->id, $publicActions)) {
             return true;
         }
 
-        // التحقق من تسجيل الدخول
         if (Yii::$app->user->isGuest) {
             throw new ForbiddenHttpException('You are not allowed to access this resource.');
         }
-
-        // التحقق من أن المستخدم يملك الدور admin فقط
-        if (!Yii::$app->user->can('admin')) {
-            throw new ForbiddenHttpException('Only admin users can access this endpoint.');
-        }
-
         return true;
     }
 
-
-
-
-
-
+/////////////////////////siginup
     public function actionSignup()
     {
         $request = Yii::$app->request;
@@ -73,10 +72,7 @@ class UserController extends Controller
         $model->load($request->post(), '');
 
         if ($model->validate()) {
-            // فقط عيّن كلمة المرور كنص عادي (سيتم تشفيرها تلقائيًا في beforeSave)
             $model->plainPassword = $model->plainPassword ?? Yii::$app->security->generateRandomString(8);
-
-
 
             if ($model->save()) {
                 return [
@@ -95,49 +91,95 @@ class UserController extends Controller
     }
 
 
-    ///////////////////login
     public function actionLogin()
     {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
         $request = Yii::$app->request;
         $username = $request->post('username');
         $password = $request->post('password');
 
         if (empty($username) || empty($password)) {
-            return [
+            return $this->asJson([
                 'success' => false,
                 'message' => 'Username and password are required.',
-            ];
+            ]);
         }
 
         $user = User::findByUsername($username);
 
         if (!$user || !$user->validatePassword($password)) {
-            return [
+            return $this->asJson([
                 'success' => false,
                 'message' => 'Invalid username or password.',
-            ];
+            ]);
         }
 
         if ($user->status != User::STATUS_ACTIVE) {
-            return [
+            return $this->asJson([
                 'success' => false,
                 'message' => 'Your account is not active.',
+            ]);
+        }
+
+        // Generate new token
+        $user->generateAccessToken();
+
+        if (!$user->save(false)) {
+            return $this->asJson([
+                'success' => false,
+                'message' => 'Failed to save access token.',
+            ]);
+        }
+
+        return $this->asJson([
+           UserResource::Arraylogin($user)
+            ]);
+    }
+
+    public function actionProfile()
+    {
+
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $user = Yii::$app->user->identity;
+
+        if (!$user) {
+            throw new \yii\web\UnauthorizedHttpException('Unauthorized access.');
+        }
+
+        return UserResource::toArray($user);
+    }
+    ////////////////////////log out 
+
+    public function actionLogout()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $identity = Yii::$app->user->identity;
+
+        if (!$identity) {
+            throw new UnauthorizedHttpException('Unauthorized access.');
+        }
+
+        $user = User::findOne($identity->id);
+
+        if (!$user) {
+            throw new UnauthorizedHttpException('User not found.');
+        }
+
+        $user->access_token = null;
+
+        if ($user->save(false)) {
+            return [
+                'success' => true,
+                'message' => 'Logout successful.',
             ];
         }
 
-        // توليد access_token جديد لكل تسجيل دخول
-        $user->generateAccessToken();
-        $user->save(false);
-
         return [
-            'success' => true,
-            'access_token' => $user->access_token,
-            'user' => [
-                'id' => $user->id,
-                'username' => $user->username,
-                'email' => $user->email,
-                'role' => $user->role,
-            ]
+            'success' => false,
+            'message' => 'Failed to logout.',
         ];
     }
 }
