@@ -23,17 +23,12 @@ use yii\web\IdentityInterface;
  * @property integer $updated_at
  * @property string $plainPassword write-only password (used for input only)
  */
-
 class User extends ActiveRecord implements IdentityInterface
 {
-
     const STATUS_DELETED = 0;
     const STATUS_INACTIVE = 9;
     const STATUS_ACTIVE = 10;
-    /////////////////////////////
-    const ROLE_ADMIN = 'admin';
-    const ROLE_TECHERA = 'teacher';
-    const ROLE_STUDENT = 'student';
+
     /** 
      * Temporary plain password for input 
      */
@@ -66,7 +61,7 @@ class User extends ActiveRecord implements IdentityInterface
             [['username', 'email', 'role'], 'required'],
             [['username', 'email'], 'unique'],
             ['email', 'email'],
-            [['username', 'email', 'role', 'auth_key', 'password_reset_token', 'verification_token', 'access_token'], 'string', 'max' => 255],
+            [['username', 'email', 'role', 'auth_key', 'password_reset_token', 'verification_token'], 'string', 'max' => 255],
             [['plainPassword'], 'string', 'min' => 6],
             ['status', 'default', 'value' => self::STATUS_ACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_INACTIVE, self::STATUS_DELETED]],
@@ -81,11 +76,14 @@ class User extends ActiveRecord implements IdentityInterface
         return static::findOne(['id' => $id, 'status' => self::STATUS_ACTIVE]);
     }
 
-
     /**
      * {@inheritdoc}
      */
-   
+    public static function findIdentityByAccessToken($token, $type = null)
+{
+    return static::findOne(['access_token' => $token, 'status' => self::STATUS_ACTIVE]);
+}
+
 
     public static function findByUsername($username)
     {
@@ -167,17 +165,12 @@ class User extends ActiveRecord implements IdentityInterface
     {
         $this->password_reset_token = null;
     }
-
-    ////////////generateAccessToken
+    ///////////////////////////
     public function generateAccessToken()
     {
         $this->access_token = Yii::$app->security->generateRandomString(64);
     }
-    public static function findIdentityByAccessToken($token, $type = null)
-    {
-        return static::findOne(['access_token' => $token, 'status' => self::STATUS_ACTIVE]);
-    }
-
+   
 
 
     /**
