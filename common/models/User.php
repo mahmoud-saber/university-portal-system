@@ -201,4 +201,6 @@ class User extends ActiveRecord implements IdentityInterface
         return $this->hasMany(Course::class, ['id' => 'course_id'])
             ->viaTable('course_registration', ['student_id' => 'id']);
     }
+
+    
 }
