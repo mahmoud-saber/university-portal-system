@@ -305,7 +305,6 @@ class UserController extends Controller
 
 
 
-
     //////////////////////////course 
     public function actionIndexCourse()
     {
