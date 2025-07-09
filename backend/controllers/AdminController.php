@@ -145,6 +145,8 @@ class AdminController extends Controller
 
         return $this->render('student_create', ['model' => $model]);
     }
+
+    
     public function actionUpdate_student($id)
     {
         $model = User::findOne($id);
