@@ -63,6 +63,7 @@ class User extends ActiveRecord implements IdentityInterface
             ['email', 'email'],
             [['username', 'email', 'role', 'auth_key', 'password_reset_token', 'verification_token'], 'string', 'max' => 255],
             [['plainPassword'], 'string', 'min' => 6],
+            [['access_token'], 'string', 'max' => 255],
             ['status', 'default', 'value' => self::STATUS_ACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_INACTIVE, self::STATUS_DELETED]],
         ];
@@ -79,10 +80,8 @@ class User extends ActiveRecord implements IdentityInterface
     /**
      * {@inheritdoc}
      */
-    public static function findIdentityByAccessToken($token, $type = null)
-    {
-        throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
-    }
+ 
+
 
     public static function findByUsername($username)
     {
@@ -164,6 +163,17 @@ class User extends ActiveRecord implements IdentityInterface
     {
         $this->password_reset_token = null;
     }
+    ////////////////
+    public static function findIdentityByAccessToken($token, $type = null)
+{
+    return static::findOne(['access_token' => $token, 'status' => self::STATUS_ACTIVE]);
+}
+
+    public function generateAccessToken()
+    {
+        $this->access_token = Yii::$app->security->generateRandomString(64);
+    }
+
 
     /**
      * Handle password and auth_key before saving
@@ -179,6 +189,7 @@ class User extends ActiveRecord implements IdentityInterface
             if ($this->isNewRecord) {
                 $this->generateAuthKey();
                 $this->generateEmailVerificationToken();
+                $this->generateAccessToken();
             }
 
             return true;
