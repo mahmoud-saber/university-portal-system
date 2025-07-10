@@ -10,7 +10,7 @@ return [
         'rules' => [
             [
                 'class' => UrlRule::class,
-                'controller' => ['user'],
+                'controller' => ['user','teacher'],
                 'pluralize' => false,
                 'extraPatterns' => [
                     'POST signup' => 'signup',
@@ -32,7 +32,17 @@ return [
                      'POST  createstudent' =>  'create-student',
                      'DELETE deletestudent/<id:\d+>'=>'delete-student',
                      'PUT updatestudent/<id:\d+>'=>'update-student',
-                     
+                     //////////////////////////////////////////////// teacher
+                     'GET index' =>'index',
+                     'GET view/<id:\d+>' =>'view',
+                     'PUT update/<id:\d+>'=>'update',
+                     'DELETE delete/<id:\d+>'=>'delete',
+                     ////////////////////////////////////////doc
+                     'GET indexdocument'=>'index-document', 
+                     'POST  createdocument' =>  'create-document',
+                     'PUT  updatedocument/<id:\d+>' =>  'update-document',
+                     'DELETE  deletedocument/<id:\d+>' =>  'delete-document',
+                                         
                 ],
             ],
         ],
