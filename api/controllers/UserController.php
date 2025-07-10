@@ -55,6 +55,11 @@ class UserController extends Controller
                     'actions' => ['signup', 'login'],
                     'roles' => ['?'],
                 ],
+                //any user can logout and show info
+                [
+                    'allow' => true,
+                    'actions' => ['logout', 'profile'],
+                    'roles' => ['@'],                ],
                 [
                     'allow' => true,
                     'actions' => [
@@ -77,6 +82,9 @@ class UserController extends Controller
                         'update-course',
                     ],
                     'roles' => ['@'],
+                    'matchCallback' => function () {
+                        return Yii::$app->user->identity->role === 'admin';
+                    },
                 ],
             ],
         ];
