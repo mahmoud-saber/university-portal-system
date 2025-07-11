@@ -30,14 +30,14 @@ class TeacherController extends Controller
             'class' => HttpBearerAuth::class,
             'only' => ['index', 'view', 'delete', 
             'update', 'create-document', 
-            'index-document', 'updat-document','delete-document'],
+            'index-document', 'updat-document','delete-document','assignment'],
         ];
 
         $behaviors['access'] = [
             'class' => AccessControl::class,
             'only' => ['index', 'view', 'delete', 'update',
              'create-document',
-              'index-document', 'updat-document','delete-document'],
+              'index-document', 'updat-document','delete-document','assignment'],
             'rules' => [
                 [
                     'allow' => true,
@@ -50,7 +50,8 @@ class TeacherController extends Controller
                         'index-document',
                         'create-document',
                         'updat-document',
-                        'delete-document'
+                        'delete-document',
+                        'assignment',
                     ],
                     'roles' => ['@'],
                     'matchCallback' => function () {
