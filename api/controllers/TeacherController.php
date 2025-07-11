@@ -28,16 +28,32 @@ class TeacherController extends Controller
 
         $behaviors['authenticator'] = [
             'class' => HttpBearerAuth::class,
-            'only' => ['index', 'view', 'delete', 
-            'update', 'create-document', 
-            'index-document', 'updat-document','delete-document','assignment'],
+            'only' => [
+                'index',
+                'view',
+                'delete',
+                'update',
+                'create-document',
+                'index-document',
+                'updat-document',
+                'delete-document',
+                'assignment'
+            ],
         ];
 
         $behaviors['access'] = [
             'class' => AccessControl::class,
-            'only' => ['index', 'view', 'delete', 'update',
-             'create-document',
-              'index-document', 'updat-document','delete-document','assignment'],
+            'only' => [
+                'index',
+                'view',
+                'delete',
+                'update',
+                'create-document',
+                'index-document',
+                'updat-document',
+                'delete-document',
+                'assignment'
+            ],
             'rules' => [
                 [
                     'allow' => true,
@@ -154,8 +170,7 @@ class TeacherController extends Controller
             throw new \yii\web\NotFoundHttpException('التسجيل المطلوب غير موجود.');
         }
 
-        // تحقق أن المستخدم Teacher وهو صاحب الدورة
-        if (!Yii::$app->user->identity || Yii::$app->user->identity->role !== 'teacher') {
+         if (!Yii::$app->user->identity || Yii::$app->user->identity->role !== 'teacher') {
             throw new \yii\web\ForbiddenHttpException('هذا الإجراء مخصص للمعلمين فقط.');
         }
 
