@@ -42,6 +42,7 @@ return [
                      'POST  createdocument' =>  'create-document',
                      'PUT  updatedocument/<id:\d+>' =>  'update-document',
                      'DELETE  deletedocument/<id:\d+>' =>  'delete-document',
+                     'GET assignment'=>'assignment',
                                          
                 ],
             ],
